@@ -2,28 +2,32 @@ import pytest
 import json
 import random
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="session", autouse=True)
 def system_ini(request):
-    return json.loads(request.config.getoption("--system_ini"))
+    return json.loads(request.config.cache.get("_system_ini", None))
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="session", autouse=True)
 def extend_ini(request):
-    return json.loads(request.config.getoption("--extend_ini"))
-
-def testCMsOnlineRatio(system_ini):
-    CMs_expect_ratio = system_ini['section2']['CMs_expect_ratio']
-    CMs_upstream_ratio = system_ini['section3']['CMs_upstream_ratio']
-    real_CM_ratio = 100 * random.random()
-    real_upstream_ratio = 100 * random.random()
-    assert CMs_expect_ratio <= real_CM_ratio, "get too low real cm ratio"
-    assert CMs_upstream_ratio <= real_upstream_ratio, "get too low ups cm ratio"
+    return json.loads(request.config.cache.get("_extend_ini", None))
 
 
-@pytest.mark.skipif(lambda: extend_ini['section1']['CMs_mac'] == '', reason="sit2 lost CM mac")
-def testCMsMac(extend_ini):
-    # Your test code here
-    pass
+def testRPDnode(system_ini):
+    if system_ini['section1']['sit_name'] == 'sit1':
+        pytest.skip("sit1 doesn't have rpd info")
+    get_rpd_node_list = system_ini['section2']['rpd_node'].split(",")
+    rpd_set = set(get_rpd_node_list)
+    print(rpd_set)
+    random_seed = 100*random.random()
+    if random_seed <= 33:
+        real_rpd_set = {'1'}
+    elif 33 < random_seed <= 66:
+        real_rpd_set = {'1', '2'}
+    else:
+        real_rpd_set = {'1', '2', '3'}
+    print(real_rpd_set)
+    assert rpd_set == real_rpd_set, "get too low real cm ratio." + '\n' + \
+                                              "expect {} vs real {}".format(rpd_set, real_rpd_set)
 
-def pytest_addoption(parser):
-    parser.addoption("--system_ini", type=str, help="Serialized ConfigParser object from system_ini.ini")
-    parser.addoption("--extend_ini", type=str, help="Serialized ConfigParser object from extend_ini.ini")
+
