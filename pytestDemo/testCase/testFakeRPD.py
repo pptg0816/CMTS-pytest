@@ -27,7 +27,7 @@ def testRPDnode(system_ini):
     else:
         real_rpd_set = {'1', '2', '3'}
     print(real_rpd_set)
-    assert rpd_set == real_rpd_set, "get too low real cm ratio." + '\n' + \
+    assert rpd_set == real_rpd_set, "get too small RPD nodes." + '\n' + \
                                               "expect {} vs real {}".format(rpd_set, real_rpd_set)
 
 
