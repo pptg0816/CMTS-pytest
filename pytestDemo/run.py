@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import pytest
+import os
 import json
 import re
 
@@ -38,11 +39,14 @@ args = parser.parse_args()
 def getPathAndReadIni(system_name, ini_name):
     ini_path = "testBed/" + system_name + "/" + ini_name
     print(ini_path)
-    ini_content = configparser.ConfigParser()
-    ini_content.read(ini_path)
-    serialized_ini = json.dumps({section: dict(ini_content[section]) for section in ini_content.sections()})
-    print(serialized_ini)
-    print(type(serialized_ini))
+    if not os.path.exists(ini_path):
+        raise FileNotFoundError(f"file {ini_path} doesn't exist")
+    else:
+        ini_content = configparser.ConfigParser()
+        ini_content.read(ini_path)
+        serialized_ini = json.dumps({section: dict(ini_content[section]) for section in ini_content.sections()})
+        print(serialized_ini)
+        print(type(serialized_ini))
     return serialized_ini
 
 
